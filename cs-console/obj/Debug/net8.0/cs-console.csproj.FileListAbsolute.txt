@@ -1,0 +1,15 @@
+d:\Document\Projects\Work-Projects\n-puzzle\cs-console\bin\Debug\net8.0\cs-console.exe
+D:\Document\Projects\Work-Projects\n-puzzle\cs-console\bin\Debug\net8.0\cs-console.deps.json
+D:\Document\Projects\Work-Projects\n-puzzle\cs-console\bin\Debug\net8.0\cs-console.runtimeconfig.json
+d:\Document\Projects\Work-Projects\n-puzzle\cs-console\bin\Debug\net8.0\cs-console.dll
+d:\Document\Projects\Work-Projects\n-puzzle\cs-console\bin\Debug\net8.0\cs-console.pdb
+d:\Document\Projects\Work-Projects\n-puzzle\cs-console\obj\Debug\net8.0\cs-console.GeneratedMSBuildEditorConfig.editorconfig
+d:\Document\Projects\Work-Projects\n-puzzle\cs-console\obj\Debug\net8.0\cs-console.AssemblyInfoInputs.cache
+d:\Document\Projects\Work-Projects\n-puzzle\cs-console\obj\Debug\net8.0\cs-console.AssemblyInfo.cs
+d:\Document\Projects\Work-Projects\n-puzzle\cs-console\obj\Debug\net8.0\cs-console.csproj.CoreCompileInputs.cache
+d:\Document\Projects\Work-Projects\n-puzzle\cs-console\obj\Debug\net8.0\cs-console.sourcelink.json
+d:\Document\Projects\Work-Projects\n-puzzle\cs-console\obj\Debug\net8.0\cs-console.dll
+d:\Document\Projects\Work-Projects\n-puzzle\cs-console\obj\Debug\net8.0\refint\cs-console.dll
+d:\Document\Projects\Work-Projects\n-puzzle\cs-console\obj\Debug\net8.0\cs-console.pdb
+D:\Document\Projects\Work-Projects\n-puzzle\cs-console\obj\Debug\net8.0\cs-console.genruntimeconfig.cache
+D:\Document\Projects\Work-Projects\n-puzzle\cs-console\obj\Debug\net8.0\ref\cs-console.dll

@@ -1,5 +1,6 @@
 // File: n_puzzle_beam_search.ts
 
+import { TestNPuzzle } from "./test-n-puzzle";
 import { NTiles, PosRC } from "./util";
 
 export class Node {
@@ -11,10 +12,10 @@ export class Node {
     public readonly parent: Node | null,
     public readonly cost: number,
     public readonly heuristic: number,
+    public readonly h2: number,
     public readonly blankPos: PosRC
-
   ) {
-    this.totalCost = this.cost + this.heuristic;
+    this.totalCost = this.cost + this.heuristic + this.h2;
   }
 
   // equals(other: Node): boolean {
@@ -28,6 +29,7 @@ export class NPuzzle {
   readonly goalState: NTiles;
   beamWidth: number;
   readonly goalPositions: Map<number, PosRC>;
+
 
   constructor(initialState: NTiles, goalState: NTiles, beamWidth: number) {
     this.size = goalState.length;
@@ -80,6 +82,23 @@ export class NPuzzle {
     return misplaced;
   }
 
+  private euclideanDistance(state: NTiles): number {
+    const size = state.length;
+    let euc = 0;
+
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        const value = state[i][j];
+        if (value !== 0) {
+          const [goalRow, goalCol] = this.goalPositions.get(value)!;
+          euc += Math.sqrt(Math.pow(goalRow - i, 2) + Math.pow(goalCol - j, 2));
+        }
+      }
+    }
+
+    return euc;
+  }
+
   getNeighbors(node: Node): Node[] {
     const directions: PosRC[] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 
@@ -94,7 +113,16 @@ export class NPuzzle {
         newState[node.blankPos[0]][node.blankPos[1]] = newState[newRow][newCol];
         newState[newRow][newCol] = 0;
 
-        neighbors.push(new Node(newState, node, node.cost + 1, this.manhattanHeuristic(newState), [newRow, newCol]));
+        neighbors.push(
+          new Node(
+            newState,
+            node,
+            node.cost + 1,
+            this.manhattanHeuristic(newState),
+            this.misplacedTilesHeuristic(this.initialState) + this.euclideanDistance(newState),
+            [newRow, newCol]
+          )
+        );
       }
     }
 
@@ -185,14 +213,19 @@ export class NPuzzle {
 
   kBeamSearch(): void {
     const blankPos = this.findBlankTile(this.initialState);
-    const openList: Node[] = [new Node(this.initialState, null, 0, this.manhattanHeuristic(this.initialState), blankPos)];
+    const openList: Node[] = [new Node(this.initialState, null, 0,
+      this.manhattanHeuristic(this.initialState),
+      this.misplacedTilesHeuristic(this.initialState) +
+      this.euclideanDistance(this.initialState),
+      blankPos)];
     const hashKeys = new Set<string>();
+
 
     while (openList.length > 0) {
       openList.sort((a, b) => a.totalCost - b.totalCost);
       const currentNodes = openList.splice(0, this.beamWidth);
 
-      console.log("total cost: " + currentNodes.map(c => c.totalCost).toString());
+      // console.log("total cost: " + currentNodes.map(c => c.totalCost).toString());
 
       for (const currentNode of currentNodes) {
         const currentStateKey = currentNode.state.flat().join(',');
@@ -235,7 +268,7 @@ export class NPuzzle {
 
   printState(state: NTiles): void {
     for (const row of state) {
-      console.log(row.join('\t'));
+      console.log(row.join('\t\t'));
     }
   }
 

@@ -82,11 +82,12 @@ export class AppComponent {
       return;
     }
 
-    const beamWidth = 2;
+    const beamWidth = 16;
 
     const puzzle = new NPuzzle(this.initial, this.goal, beamWidth);
     try {
       const solution = puzzle.kBeamSearch();
+      alert("find solution");
       console.log("Solution found:", solution);
     } catch (error) {
       console.error(error);
