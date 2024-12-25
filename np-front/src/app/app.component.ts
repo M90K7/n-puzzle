@@ -46,12 +46,12 @@ export class AppComponent {
   runBeamAlgo() {
     // Example usage
     this.initial = [
-      [1, 2, 3, 4, 5, 6],
+      [1, 2, 4, 3, 0, 6],
       [7, 8, 9, 10, 11, 12],
       [13, 14, 15, 16, 17, 18],
       [19, 20, 21, 22, 23, 24],
-      [0, 25, 27, 28, 29, 30],
-      [31, 32, 26, 33, 34, 35],
+      [5, 25, 27, 28, 29, 30],
+      [31, 26, 32, 33, 34, 35],
     ];
     this.goal = [
       [1, 2, 3, 4, 5, 6],
@@ -63,30 +63,30 @@ export class AppComponent {
     ];
 
     // this.initial = [
-    //   [1, 2, 3],
-    //   [5, 6, 0],
-    //   [7, 8, 4]
+    //   [2, 1, 3],
+    //   [5, 6, 8],
+    //   [7, 0, 4]
     // ];
 
     // this.goal = [
-    //   [1, 2, 3],
+    //   [0, 2, 3],
     //   [5, 8, 6],
-    //   [0, 7, 4]
+    //   [1, 4, 7]
     // ];
 
-    const canSolve = new TestNPuzzle().isSolvable(this.initial, this.goal);
+    const solveRes = new TestNPuzzle(this.initial, this.goal).calcSolvable();
 
-    console.log("canSolve: ", canSolve);
+    console.log("canSolve: ", solveRes);
 
-    if (!canSolve) {
+    if (!solveRes.canSolve) {
       return;
     }
 
-    const beamWidth = 1;
+    const beamWidth = 2;
 
     const puzzle = new NPuzzle(this.initial, this.goal, beamWidth);
     try {
-      const solution = puzzle.solve();
+      const solution = puzzle.kBeamSearch();
       console.log("Solution found:", solution);
     } catch (error) {
       console.error(error);

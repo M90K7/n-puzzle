@@ -1,22 +1,33 @@
 // File: n_puzzle_beam_search.ts
 
-import { NTiles } from "./util";
+import { NTiles, PosRC } from "./util";
 
-export interface Node {
-  state: NTiles;
-  g: number; // Cost so far
-  h: number; // Heuristic cost
-  f: number; // Total cost
-  path: NTiles[]; // Path from the start state
-  parent?: Node;
+export class Node {
+
+  public readonly totalCost: number;
+
+  constructor(
+    public readonly state: NTiles,
+    public readonly parent: Node | null,
+    public readonly cost: number,
+    public readonly heuristic: number,
+    public readonly blankPos: PosRC
+
+  ) {
+    this.totalCost = this.cost + this.heuristic;
+  }
+
+  // equals(other: Node): boolean {
+  //   return this.state.flat().join(',') === other.state.flat().join(',');
+  // }
 }
 
 export class NPuzzle {
-  size: number;
+  readonly size: number;
   initialState: NTiles;
-  goalState: NTiles;
+  readonly goalState: NTiles;
   beamWidth: number;
-  goalPositions: Map<number, [number, number]>;
+  readonly goalPositions: Map<number, PosRC>;
 
   constructor(initialState: NTiles, goalState: NTiles, beamWidth: number) {
     this.size = goalState.length;
@@ -27,8 +38,8 @@ export class NPuzzle {
   }
 
   // Create a map for goal positions for efficient lookup
-  private getGoalPositions(goalState: NTiles): Map<number, [number, number]> {
-    const positions = new Map<number, [number, number]>();
+  private getGoalPositions(goalState: NTiles): Map<number, PosRC> {
+    const positions = new Map<number, PosRC>();
     for (let i = 0; i < goalState.length; i++) {
       for (let j = 0; j < goalState[i].length; j++) {
         positions.set(goalState[i][j], [i, j]);
@@ -39,17 +50,20 @@ export class NPuzzle {
 
   // Manhattan Distance heuristic
   private manhattanHeuristic(state: NTiles): number {
-    let distance = 0;
-    for (let i = 0; i < state.length; i++) {
-      for (let j = 0; j < state[i].length; j++) {
+    const size = state.length;
+    let heuristic = 0;
+
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
         const value = state[i][j];
-        if (value !== 0) { // Skip empty tile
-          const [goalX, goalY] = this.goalPositions.get(value)!;
-          distance += Math.abs(goalX - i) + Math.abs(goalY - j);
+        if (value !== 0) {
+          const [goalRow, goalCol] = this.goalPositions.get(value)!;
+          heuristic += Math.abs(i - goalRow) + Math.abs(j - goalCol);
         }
       }
     }
-    return distance;
+
+    return heuristic;
   }
 
   // Misplaced tiles heuristic
@@ -66,8 +80,29 @@ export class NPuzzle {
     return misplaced;
   }
 
+  getNeighbors(node: Node): Node[] {
+    const directions: PosRC[] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+    const neighbors: Node[] = [];
+
+    for (const [dRow, dCol] of directions) {
+      const newRow = node.blankPos[0] + dRow;
+      const newCol = node.blankPos[1] + dCol;
+
+      if (newRow >= 0 && newRow < this.size && newCol >= 0 && newCol < this.size) {
+        const newState = node.state.map(row => row.slice());
+        newState[node.blankPos[0]][node.blankPos[1]] = newState[newRow][newCol];
+        newState[newRow][newCol] = 0;
+
+        neighbors.push(new Node(newState, node, node.cost + 1, this.manhattanHeuristic(newState), [newRow, newCol]));
+      }
+    }
+
+    return neighbors;
+  }
+
   // Find the blank tile (0) position
-  private findBlankTile(state: NTiles): [number, number] {
+  private findBlankTile(state: NTiles): PosRC {
     for (let i = 0; i < state.length; i++) {
       for (let j = 0; j < state[i].length; j++) {
         if (state[i][j] === 0) return [i, j];
@@ -106,86 +141,112 @@ export class NPuzzle {
   }
 
   // Beam Search algorithm
-  public solve(): NTiles[] {
-    const beam: Node[] = [
-      { state: this.initialState, g: 0, h: this.manhattanHeuristic(this.initialState), f: 0, path: [] },
-    ];
+  // public solve(): NTiles[] {
+  //   const beam: Node[] = [
+  //     { state: this.initialState, g: 0, h: this.manhattanHeuristic(this.initialState), f: 0, path: [] },
+  //   ];
 
-    while (beam.length > 0) {
-      const newBeam: Node[] = [];
+  //   while (beam.length > 0) {
+  //     const newBeam: Node[] = [];
 
-      for (const node of beam) {
-        if (JSON.stringify(node.state) === JSON.stringify(this.goalState)) {
-          return node.path; // Solution found
+  //     for (const node of beam) {
+  //       if (JSON.stringify(node.state) === JSON.stringify(this.goalState)) {
+  //         return node.path; // Solution found
+  //       }
+
+  //       const successors = this.generateSuccessors(node.state);
+  //       for (const successor of successors) {
+  //         const g = node.g + 1;
+  //         const h = this.manhattanHeuristic(successor); // Change to misplacedTilesHeuristic if needed
+  //         newBeam.push({
+  //           state: successor,
+  //           g,
+  //           h,
+  //           f: g + h,
+  //           path: [...node.path, successor],
+  //           parent: node
+  //         });
+  //       }
+  //     }
+
+  //     // Sort by f and limit the beam width
+  //     newBeam.sort((a, b) => a.f - b.f);
+  //     beam.length = Math.min(this.beamWidth, newBeam.length);
+  //     for (let i = 0; i < beam.length; i++) {
+  //       beam[i] = newBeam[i];
+  //     }
+
+  //     console.log(beam);
+  //   }
+
+  //   throw new Error("No solution found");
+  // }
+
+
+  kBeamSearch(): void {
+    const blankPos = this.findBlankTile(this.initialState);
+    const openList: Node[] = [new Node(this.initialState, null, 0, this.manhattanHeuristic(this.initialState), blankPos)];
+    const hashKeys = new Set<string>();
+
+    while (openList.length > 0) {
+      openList.sort((a, b) => a.totalCost - b.totalCost);
+      const currentNodes = openList.splice(0, this.beamWidth);
+
+      console.log("total cost: " + currentNodes.map(c => c.totalCost).toString());
+
+      for (const currentNode of currentNodes) {
+        const currentStateKey = currentNode.state.flat().join(',');
+        if (hashKeys.has(currentStateKey)) {
+          continue;
+        };
+
+        if (currentNode.heuristic === 0) {
+          this.printSolution(currentNode);
+          return;
         }
 
-        const successors = this.generateSuccessors(node.state);
-        for (const successor of successors) {
-          const g = node.g + 1;
-          const h = this.manhattanHeuristic(successor); // Change to misplacedTilesHeuristic if needed
-          newBeam.push({
-            state: successor,
-            g,
-            h,
-            f: g + h,
-            path: [...node.path, successor],
-            parent: node
-          });
+        hashKeys.add(currentStateKey);
+
+        for (const neighbor of this.getNeighbors(currentNode)) {
+          const neighborStateKey = neighbor.state.flat().join(',');
+          if (!hashKeys.has(neighborStateKey)) {
+            openList.push(neighbor);
+          }
         }
       }
-
-      // Sort by f and limit the beam width
-      newBeam.sort((a, b) => a.f - b.f);
-      beam.length = Math.min(this.beamWidth, newBeam.length);
-      for (let i = 0; i < beam.length; i++) {
-        beam[i] = newBeam[i];
-      }
-
-      console.log(beam);
     }
 
-    throw new Error("No solution found");
+    console.log("No solution found.");
   }
 
-  public solveMe(): NTiles[] {
-    const beam: Node[] = [
-      { state: this.initialState, g: 0, h: this.manhattanHeuristic(this.initialState), f: 0, path: [] },
-    ];
-
-    while (beam.length > 0) {
-      const newBeam: Node[] = [];
-
-      for (const node of beam) {
-        if (JSON.stringify(node.state) === JSON.stringify(this.goalState)) {
-          return node.path; // Solution found
-        }
-
-        const successors = this.generateSuccessors(node.state);
-        for (const successor of successors) {
-          const g = node.g + 1;
-          const h = this.manhattanHeuristic(successor); // Change to misplacedTilesHeuristic if needed
-          newBeam.push({
-            state: successor,
-            g,
-            h,
-            f: g + h,
-            path: [...node.path, successor],
-            parent: node
-          });
-        }
-      }
-
-      // Sort by f and limit the beam width
-      newBeam.sort((a, b) => a.f - b.f);
-      beam.length = Math.min(this.beamWidth, newBeam.length);
-      for (let i = 0; i < beam.length; i++) {
-        beam[i] = newBeam[i];
-      }
-
-      console.log(beam);
+  printSolution(node: Node): void {
+    const path: Node[] = [];
+    while (node) {
+      path.push(node);
+      node = node.parent!;
     }
 
-    throw new Error("No solution found");
+    console.log("Solution path:");
+    while (path.length > 0) {
+      this.printState(path.pop()!.state);
+      console.log("----");
+    }
+  }
+
+  printState(state: NTiles): void {
+    for (const row of state) {
+      console.log(row.join('\t'));
+    }
+  }
+
+  private getStateKey(state: NTiles) {
+
+    let sum = 0;
+    for (let row = 0; row < state.length; row++) {
+      sum += state[row].reduce((sum, v, col) => sum + (v * (col + row)), 0);
+    }
+
+    return sum;
   }
 }
 
