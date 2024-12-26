@@ -5,6 +5,7 @@ import { BfsAlgo } from "../search/bfs-search";
 import { NTiles } from "../search/util";
 import { NPuzzle } from "../search/k-beam-search";
 import { TestNPuzzle } from "../search/test-n-puzzle";
+import { NPuzzleGenerator } from "../search/puzzle-genrator";
 
 @Component({
   selector: 'app-root',
@@ -19,6 +20,7 @@ export class AppComponent {
   initial!: NTiles;
 
   goal!: NTiles;
+  solveRes!: { start: number; goal: number; startRem: number; goalRem: number; canSolve: boolean; };
 
   constructor() {
   }
@@ -43,7 +45,8 @@ export class AppComponent {
     algo.solve(this.initial, startX, startY, this.goal);
   }
 
-  runBeamAlgo() {
+  createSample() {
+
     // Example usage
     this.initial = [
       [1, 2, 4, 3, 0, 6],
@@ -74,15 +77,47 @@ export class AppComponent {
     //   [1, 4, 7]
     // ];
 
-    const solveRes = new TestNPuzzle(this.initial, this.goal).calcSolvable();
 
-    console.log("canSolve: ", solveRes);
+    // مثال استفاده:
+    const SIZE = 10;
 
-    if (!solveRes.canSolve) {
+    const puzzleGenGoal = new NPuzzleGenerator(SIZE);
+    this.initial = puzzleGenGoal.createPuzzle();
+    this.goal = puzzleGenGoal.createPuzzle();
+
+    this.solveRes = new TestNPuzzle(this.initial, this.goal).calcSolvable();
+
+    console.log("canSolve: ", this.solveRes);
+
+    if (!this.solveRes.canSolve) {
       return;
     }
 
-    const beamWidth = 16;
+  }
+
+  runBeamAlgo() {
+
+
+    // try {
+    //   let movedPuzzle = puzzleGenerator.moveTile("down");
+    //   if (movedPuzzle) {
+    //     console.log("Puzzle after move down:");
+    //     movedPuzzle.printPuzzle();
+    //     movedPuzzle = movedPuzzle.moveTile("right");
+    //     if (movedPuzzle) {
+    //       console.log("Puzzle after move right:");
+    //       movedPuzzle.printPuzzle();
+    //       const distance = movedPuzzle.manhattanDistance(goalState);
+    //       console.log("Manhattan Distance:", distance);
+    //     }
+    //   }
+    // } catch (error) {
+    //   console.error(error);
+    // }
+
+
+
+    const beamWidth = 32;
 
     const puzzle = new NPuzzle(this.initial, this.goal, beamWidth);
     try {

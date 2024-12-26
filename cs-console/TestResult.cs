@@ -1,9 +1,9 @@
 public class TestResult
 {
-    private readonly int start;
-    private readonly int startRem;
-    private readonly int goal;
-    private readonly int goalRem;
+    public readonly int start;
+    public readonly int startRem;
+    public readonly int goal;
+    public readonly int goalRem;
     public bool canSolve;
 
     public TestResult(int start, int goal)

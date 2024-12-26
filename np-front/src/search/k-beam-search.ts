@@ -12,10 +12,17 @@ export class Node {
     public readonly parent: Node | null,
     public readonly cost: number,
     public readonly heuristic: number,
-    public readonly h2: number,
     public readonly blankPos: PosRC
   ) {
-    this.totalCost = this.cost + this.heuristic + this.h2;
+    this.totalCost = this.cost + this.heuristic;
+  }
+
+  copyState(): NTiles {
+    const copy: NTiles = [];
+    for (let i = 0; i < this.state.length; i++) {
+      copy.push([...this.state[i]]);
+    }
+    return copy;
   }
 
   // equals(other: Node): boolean {
@@ -60,7 +67,7 @@ export class NPuzzle {
         const value = state[i][j];
         if (value !== 0) {
           const [goalRow, goalCol] = this.goalPositions.get(value)!;
-          heuristic += Math.abs(i - goalRow) + Math.abs(j - goalCol);
+          heuristic += (Math.abs(i - goalRow) + Math.abs(j - goalCol));
         }
       }
     }
@@ -109,7 +116,7 @@ export class NPuzzle {
       const newCol = node.blankPos[1] + dCol;
 
       if (newRow >= 0 && newRow < this.size && newCol >= 0 && newCol < this.size) {
-        const newState = node.state.map(row => row.slice());
+        const newState = node.copyState();
         newState[node.blankPos[0]][node.blankPos[1]] = newState[newRow][newCol];
         newState[newRow][newCol] = 0;
 
@@ -119,7 +126,6 @@ export class NPuzzle {
             node,
             node.cost + 1,
             this.manhattanHeuristic(newState),
-            this.misplacedTilesHeuristic(this.initialState) + this.euclideanDistance(newState),
             [newRow, newCol]
           )
         );
@@ -213,21 +219,22 @@ export class NPuzzle {
 
   kBeamSearch(): void {
     const blankPos = this.findBlankTile(this.initialState);
-    const openList: Node[] = [new Node(this.initialState, null, 0,
-      this.manhattanHeuristic(this.initialState),
-      this.misplacedTilesHeuristic(this.initialState) +
-      this.euclideanDistance(this.initialState),
-      blankPos)];
+    let openList: Node[] = [new Node(this.initialState, null, 0, this.manhattanHeuristic(this.initialState), blankPos)];
     const hashKeys = new Set<string>();
 
 
     while (openList.length > 0) {
-      openList.sort((a, b) => a.totalCost - b.totalCost);
-      const currentNodes = openList.splice(0, this.beamWidth);
 
-      // console.log("total cost: " + currentNodes.map(c => c.totalCost).toString());
+      let nextOpenList = [];
 
-      for (const currentNode of currentNodes) {
+      // const currentNodes = openList.toSorted((a, b) => a.cost - b.cost).splice(0, this.beamWidth).reverse();
+      // const currentNodes = openList.sort((a, b) => a.cost - b.cost).splice(0, this.beamWidth);
+      // openList.splice(0, this.beamWidth);
+      // const currentNodes = openList.splice(0, this.beamWidth);
+
+      // console.log("total cost: " + openList.map(c => `${c.totalCost}-${c.heuristic}`).toString());
+
+      for (const currentNode of openList) {
         const currentStateKey = currentNode.state.flat().join(',');
         if (hashKeys.has(currentStateKey)) {
           continue;
@@ -243,10 +250,12 @@ export class NPuzzle {
         for (const neighbor of this.getNeighbors(currentNode)) {
           const neighborStateKey = neighbor.state.flat().join(',');
           if (!hashKeys.has(neighborStateKey)) {
-            openList.push(neighbor);
+            nextOpenList.push(neighbor);
           }
         }
       }
+
+      openList = nextOpenList.sort((a, b) => a.heuristic - b.heuristic).splice(0, this.beamWidth);
     }
 
     console.log("No solution found.");

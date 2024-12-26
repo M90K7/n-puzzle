@@ -2,5 +2,9 @@
 
 <p>final: {{ goal | json }}</p>
 <p>initial: {{ initial | json }}</p>
+<p>Solve: {{ solveRes | json }}</p>
 
+<button (click)="createSample()">Sample</button>
+<br>
+<br>
 <button (click)="runBeamAlgo()">Run</button>
