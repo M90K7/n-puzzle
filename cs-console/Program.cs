@@ -20,7 +20,7 @@
     ];
 
     const int N = 6;
-    const int K = 300;
+    const int K = 16;
 
     var puzzleGen = new NPuzzleGenerator(N);
     initial = puzzleGen.CreatePuzzle();
