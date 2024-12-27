@@ -5,8 +5,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>NPuzzle</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-    <!-- <PublishAot>true</PublishAot> -->
+    <!-- <Nullable>disable</Nullable> -->
+    <PublishAot>true</PublishAot>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 

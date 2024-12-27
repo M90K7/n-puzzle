@@ -1,15 +1,16 @@
+
 using System.Linq;
 
 public class NPuzzle
 {
   int size;
-  int[][] initialState;
-  int[][] goalState;
+  short[][] initialState;
+  short[][] goalState;
   int beamWidth;
-  Dictionary<int, int[]> goalPositions = new();
+  Dictionary<short, short[]> goalPositions = new();
 
 
-  public NPuzzle(int[][] initialState, int[][] goalState, int beamWidth)
+  public NPuzzle(short[][] initialState, short[][] goalState, int beamWidth)
   {
     this.size = goalState.Length;
     this.initialState = initialState;
@@ -19,12 +20,12 @@ public class NPuzzle
   }
 
   // Create a map for goal positions for efficient lookup
-  private Dictionary<int, int[]> getGoalPositions(int[][] goalState)
+  private Dictionary<short, short[]> getGoalPositions(short[][] goalState)
   {
-    Dictionary<int, int[]> positions = new();
-    for (var i = 0; i < goalState.Length; i++)
+    Dictionary<short, short[]> positions = new();
+    for (short i = 0; i < goalState.Length; i++)
     {
-      for (var j = 0; j < goalState[i].Length; j++)
+      for (short j = 0; j < goalState[i].Length; j++)
       {
         positions.Add(goalState[i][j], [i, j]);
       }
@@ -33,7 +34,7 @@ public class NPuzzle
   }
 
   // Manhattan Distance heuristic
-  private int manhattanHeuristic(int[][] state)
+  private int manhattanHeuristic(short[][] state)
   {
     var size = state.Length;
     var heuristic = 0;
@@ -72,16 +73,16 @@ public class NPuzzle
     return misplaced;
   }
 
-  private double euclideanDistanceHeuristic(int[][] state)
+  private double euclideanDistanceHeuristic(short[][] state)
   {
     var size = state.Length;
     double euc = 0;
 
-    for (var i = 0; i < size; i++)
+    for (short i = 0; i < size; i++)
     {
-      for (var j = 0; j < size; j++)
+      for (short j = 0; j < size; j++)
       {
-        var value = state[i][j];
+        short value = state[i][j];
         if (value != 0)
         {
           var pos = this.goalPositions[value];
@@ -93,25 +94,25 @@ public class NPuzzle
     return euc;
   }
 
-  public double CalcHeuristic(int[][] state)
+  public int CalcHeuristic(short[][] state)
   {
     return
-      // this.euclideanDistanceHeuristic(state) + 
+      // this.euclideanDistanceHeuristic(state)
       this.manhattanHeuristic(state)
-      // +this.misplacedTilesHeuristic(state)
+      // this.misplacedTilesHeuristic(state)
       ;
   }
 
   public List<Node> getNeighbors(Node node)
   {
-    int[][] directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    short[][] directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 
     List<Node> neighbors = new();
 
     foreach (var dir in directions)
     {
-      var newRow = node.blankPos[0] + dir[0];
-      var newCol = node.blankPos[1] + dir[1];
+      int newRow = node.blankPos[0] + dir[0];
+      int newCol = node.blankPos[1] + dir[1];
 
       if (newRow >= 0 && newRow < this.size && newCol >= 0 && newCol < this.size)
       {
@@ -123,9 +124,8 @@ public class NPuzzle
           new Node(
             newState,
             node,
-            node.cost + 1,
             this.CalcHeuristic(newState),
-            [newRow, newCol]
+            [Convert.ToInt16(newRow), Convert.ToInt16(newCol)]
           )
         );
       }
@@ -135,11 +135,11 @@ public class NPuzzle
   }
 
   // Find the blank tile (0) position
-  private int[] findBlankTile(int[][] state)
+  private short[] findBlankTile(short[][] state)
   {
-    for (var i = 0; i < state.Length; i++)
+    for (short i = 0; i < state.Length; i++)
     {
-      for (var j = 0; j < state[i].Length; j++)
+      for (short j = 0; j < state[i].Length; j++)
       {
         if (state[i][j] == 0) return [i, j];
       }
@@ -152,16 +152,17 @@ public class NPuzzle
   {
     var blankPos = this.findBlankTile(this.initialState);
 
-    List<Node> openList = [new Node(this.initialState, null, 0, this.CalcHeuristic(this.initialState), blankPos)];
+    List<Node> openList = [
+      new Node(this.initialState, null, this.CalcHeuristic(this.initialState), blankPos)];
 
-    Dictionary<string, bool> hashKeys = new();
+    HashSet<string> hashKeys = new();
 
-    List<Node> closedNodes = [];
+    long loop = 0;
 
     while (openList.Count > 0)
     {
+
       List<Node> nextOpenList = [];
-      List<Node> discardedNodes = [];
 
       // var currentNodes = openList.OrderBy(x => x.heuristic).Take(this.beamWidth).ToArray();
       // openList.RemoveRange(0, Math.Min(this.beamWidth, openList.Count));
@@ -169,41 +170,44 @@ public class NPuzzle
       // var print = string.Join(" , ", currentNodes.Select(c => c.totalCost.ToString()));
       // Console.WriteLine($"total cost: {print} & Tree {openList.Count} - unique: {hashKeys.Count}");
 
-      foreach (var currentNode in openList)
+      for (int i = 0; i < openList.Count; i++)
       {
-        // var currentStateKey = currentNode.HashKey();
-        // if (hashKeys.ContainsKey(currentStateKey))
-        // {
-        //   continue;
-        // };
 
-        if (currentNode.heuristic == 0)
+        loop++;
+
+        if (openList[i].heuristic == 0)
         {
-          Console.WriteLine($"solution found. Tree {openList.Count} - unique: {hashKeys.Count}");
-          this.printSolution(currentNode);
+          Console.WriteLine($"solution found. loop {loop} - unique: {hashKeys.Count}");
+          // this.printSolution(openList[i]);
           return;
         }
 
-        // hashKeys.Add(currentStateKey, true);
-
-        foreach (var neighbor in this.getNeighbors(currentNode))
+        var _hashKey = openList[i].HashKey();
+        if (hashKeys.Contains(_hashKey))
         {
-          // var neighborStateKey = neighbor.HashKey();
-          // if (!hashKeys.ContainsKey(neighborStateKey))
+          continue;
+        };
+
+        hashKeys.Add(_hashKey);
+
+        foreach (var neighbor in this.getNeighbors(openList[i]))
+        {
+          _hashKey = neighbor.HashKey();
+          if (!hashKeys.Contains(_hashKey))
           {
             nextOpenList.Add(neighbor);
           }
         }
       }
 
-      nextOpenList = nextOpenList.OrderBy(l => l.heuristic).ToList();
-      // closedNodes.AddRange(nextOpenList.Skip(beamWidth + 1));
+      openList = nextOpenList.OrderBy(l => l.heuristic).Take(beamWidth).ToList();
+      // nextOpenList.Clear();
 
-      openList = nextOpenList.Take(beamWidth).ToList();
-      nextOpenList.Clear();
-
-      GC.Collect();
-      GC.WaitForPendingFinalizers();
+      if (hashKeys.Count % 1000 == 0)
+      {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+      }
     }
 
     Console.WriteLine("No solution found.");
@@ -213,9 +217,9 @@ public class NPuzzle
   {
     var blankPos = this.findBlankTile(this.initialState);
 
-    List<Node> openList = [new Node(this.initialState, null, 0, this.CalcHeuristic(this.initialState), blankPos)];
+    List<Node> openList = [new Node(this.initialState, null, this.CalcHeuristic(this.initialState), blankPos)];
 
-    Dictionary<string, bool> hashKeys = new();
+    HashSet<string> hashKeys = new();
 
     List<Node> closedNodes = [];
 
@@ -248,6 +252,7 @@ public class NPuzzle
       return nextBeam.Distinct().ToList();
     };
 
+    long loop = 0;
     while (openList.Count > 0)
     {
       List<Node> nextOpenList = [];
@@ -258,32 +263,34 @@ public class NPuzzle
       // var print = string.Join(" , ", currentNodes.Select(c => c.totalCost.ToString()));
       // Console.WriteLine($"total cost: {print} & Tree {openList.Count} - unique: {hashKeys.Count}");
 
-      foreach (var currentNode in openList)
+      for (int i = 0; i < openList.Count; i++)
       {
-        var currentStateKey = currentNode.HashKey();
-        if (hashKeys.ContainsKey(currentStateKey))
+        var currentNode = openList[i];
+        var _hashKey = currentNode.HashKey();
+
+        if (hashKeys.Contains(_hashKey))
         {
           continue;
         };
 
         if (currentNode.heuristic == 0)
         {
-          Console.WriteLine($"solution found. Tree {openList.Count} - unique: {hashKeys.Count}");
-          this.printSolution(currentNode);
+          Console.WriteLine($"solution found. Tree loop {loop} - unique: {hashKeys.Count}");
+          // this.printSolution(currentNode);
           return;
         }
 
-        hashKeys.Add(currentStateKey, true);
+        hashKeys.Add(_hashKey);
 
         foreach (var neighbor in this.getNeighbors(currentNode))
         {
-          var neighborStateKey = neighbor.HashKey();
-          if (!hashKeys.ContainsKey(neighborStateKey))
+          _hashKey = neighbor.HashKey();
+          if (!hashKeys.Contains(_hashKey))
           {
             nextOpenList.Add(neighbor);
           }
         }
-
+        loop++;
       }
       // Method 1
       // openList = SelectNextBeam(nextOpenList);
@@ -291,16 +298,23 @@ public class NPuzzle
       // Method 2
       if (nextOpenList.Count > beamWidth)
       {
-        nextOpenList = nextOpenList.OrderBy(_ => random.Next()).Take(beamWidth).ToList();
+        nextOpenList = nextOpenList.OrderBy(b => b.heuristic).ToList();
+        var _nextOpenList = nextOpenList.Take(beamWidth / 2).ToList();
+        _nextOpenList.AddRange(nextOpenList.TakeLast(beamWidth / 2));
+        nextOpenList = _nextOpenList.ToList();
       }
       openList = nextOpenList;
-
 
       if (openList.Count == 0)
         break;
 
-      // GC.Collect();
-      // GC.WaitForPendingFinalizers();
+      if (hashKeys.Count % 1000 == 0)
+      {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+      }
+
+
     }
 
     Console.WriteLine("No solution found.");
@@ -326,7 +340,7 @@ public class NPuzzle
     Console.WriteLine($"Solution with: {c} paths");
   }
 
-  public static void printState(int[][] state)
+  public static void printState(short[][] state)
   {
     foreach (var row in state)
     {

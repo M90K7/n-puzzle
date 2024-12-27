@@ -1,16 +1,16 @@
 public class TestNPuzzle
 {
     private int nSize = 0;
-    private readonly int[][] startPuzzle;
-    private readonly int[][] goalPuzzle;
+    private readonly short[][] startPuzzle;
+    private readonly short[][] goalPuzzle;
 
-    public TestNPuzzle(int[][] startPuzzle, int[][] goalPuzzle)
+    public TestNPuzzle(short[][] startPuzzle, short[][] goalPuzzle)
     {
         this.nSize = goalPuzzle.Length;
         this.startPuzzle = startPuzzle;
         this.goalPuzzle = goalPuzzle;
     }
-    private int _getInversionsCount(int[][] arr)
+    private int _getInversionsCount(short[][] arr)
     {
         var inv_count = 0;
         for (var row = 0; row < this.nSize; row++)
@@ -38,16 +38,16 @@ public class TestNPuzzle
         return inv_count;
     }
 
-    private int _findBlankPosition(int[][] puzzle)
+    private short _findBlankPosition(short[][] puzzle)
     {
-        for (var i = 0; i < this.nSize; i++)
-            for (var j = 0; j < this.nSize; j++)
+        for (short i = 0; i < this.nSize; i++)
+            for (short j = 0; j < this.nSize; j++)
                 if (puzzle[i][j] == 0)
-                    return i + 1;
+                    return (short)(i + 1);
         return 0;
     }
 
-    private int _calcInversions(int[][] puzzle)
+    private int _calcInversions(short[][] puzzle)
     {
         var invCount = this._getInversionsCount(puzzle);
         if (this.nSize % 2 == 0)

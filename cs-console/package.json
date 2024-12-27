@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "publish": "dotnet publish -o bin/publish --ucr --sc",
+    "run-publish": "npm run publish && cd bin/publish && cs-console.exe"
+  }
+}

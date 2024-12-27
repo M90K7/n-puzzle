@@ -4,21 +4,26 @@ using System.Linq;
 
 public class NPuzzleGenerator
 {
-  private int[][] puzzle;
-  private int size;
-  private (int row, int col) blankPos;
+  private short[][] puzzle;
+  private short size;
+  private (short row, short col) blankPos;
 
-  public NPuzzleGenerator(int size)
+  public NPuzzleGenerator(short size)
   {
     this.size = size;
     this.puzzle = this.CreatePuzzle();
     this.blankPos = this.FindBlank();
   }
 
-  public int[][] CreatePuzzle()
+  public short[][] CreatePuzzle()
   {
     // ایجاد یک لیست از اعداد 0 تا size*size - 1
-    List<int> tiles = Enumerable.Range(0, size * size).ToList();
+    List<short> tiles = new();
+
+    for (short i = 0; i < size * size; i++)
+    {
+      tiles.Add(i);
+    }
 
     // به هم ریختن لیست با استفاده از الگوریتم Fisher-Yates
     Random rng = new Random();
@@ -27,17 +32,17 @@ public class NPuzzleGenerator
     {
       n--;
       int k = rng.Next(n + 1);
-      int value = tiles[k];
+      short value = tiles[k];
       tiles[k] = tiles[n];
       tiles[n] = value;
     }
 
     // تبدیل لیست به آرایه دو بعدی
-    int[][] puzzle = new int[size][];
-    for (int i = 0; i < size; i++)
+    short[][] puzzle = new short[size][];
+    for (short i = 0; i < size; i++)
     {
-      puzzle[i] = new int[size];
-      for (int j = 0; j < size; j++)
+      puzzle[i] = new short[size];
+      for (short j = 0; j < size; j++)
       {
         puzzle[i][j] = tiles[i * size + j];
       }
@@ -45,14 +50,14 @@ public class NPuzzleGenerator
     return puzzle;
   }
 
-  public int[][] CreateGoalState()
+  public short[][] CreateGoalState()
   {
-    int[][] goal = new int[size][];
-    int counter = 0;
-    for (int i = 0; i < size; i++)
+    short[][] goal = new short[size][];
+    short counter = 0;
+    for (short i = 0; i < size; i++)
     {
-      goal[i] = new int[size];
-      for (int j = 0; j < size; j++)
+      goal[i] = new short[size];
+      for (short j = 0; j < size; j++)
       {
         goal[i][j] = counter++;
       }
@@ -60,11 +65,11 @@ public class NPuzzleGenerator
     return goal;
   }
 
-  private (int row, int col) FindBlank()
+  private (short row, short col) FindBlank()
   {
-    for (int i = 0; i < size; i++)
+    for (short i = 0; i < size; i++)
     {
-      for (int j = 0; j < size; j++)
+      for (short j = 0; j < size; j++)
       {
         if (puzzle[i][j] == 0)
         {
@@ -77,7 +82,7 @@ public class NPuzzleGenerator
 
   public NPuzzleGenerator MoveTile(string direction)
   {
-    (int row, int col) newPos = blankPos;
+    (short row, short col) newPos = blankPos;
 
     switch (direction)
     {
@@ -98,7 +103,7 @@ public class NPuzzleGenerator
     if (newPos.row >= 0 && newPos.row < size && newPos.col >= 0 && newPos.col < size)
     {
       // ایجاد کپی عمیق به روش صحیح
-      int[][] newPuzzle = puzzle.Select(row => row.ToArray()).ToArray();
+      short[][] newPuzzle = puzzle.Select(row => row.ToArray()).ToArray();
 
       // جابجایی خانه ها در کپی
       (newPuzzle[blankPos.row][blankPos.col], newPuzzle[newPos.row][newPos.col]) = (newPuzzle[newPos.row][newPos.col], newPuzzle[blankPos.row][blankPos.col]);
@@ -109,11 +114,11 @@ public class NPuzzleGenerator
     return null;
   }
 
-  public void PrintPuzzle(int[][] puzzle)
+  public void PrintPuzzle(short[][] puzzle)
   {
-    for (int i = 0; i < size; i++)
+    for (short i = 0; i < size; i++)
     {
-      for (int j = 0; j < size; j++)
+      for (short j = 0; j < size; j++)
       {
         Console.Write(puzzle[i][j].ToString().PadLeft(2, '0') + " ");
       }
@@ -121,29 +126,11 @@ public class NPuzzleGenerator
     }
   }
 
-  public int ManhattanDistance(int[][] goal)
+  private (short row, short col) FindValueInGoal(short[][] goal, short value)
   {
-    int distance = 0;
-    for (int i = 0; i < size; i++)
+    for (short i = 0; i < size; i++)
     {
-      for (int j = 0; j < size; j++)
-      {
-        int value = puzzle[i][j];
-        if (value != 0)
-        {
-          (int goalRow, int goalCol) = FindValueInGoal(goal, value);
-          distance += Math.Abs(i - goalRow) + Math.Abs(j - goalCol);
-        }
-      }
-    }
-    return distance;
-  }
-
-  private (int row, int col) FindValueInGoal(int[][] goal, int value)
-  {
-    for (int i = 0; i < size; i++)
-    {
-      for (int j = 0; j < size; j++)
+      for (short j = 0; j < size; j++)
       {
         if (goal[i][j] == value)
         {
