@@ -1,4 +1,5 @@
 
+using System.Diagnostics;
 using System.Linq;
 
 public class NPuzzle
@@ -150,6 +151,9 @@ public class NPuzzle
 
   public void kBeamSearch()
   {
+    Stopwatch watcher = new();
+    watcher.Start();
+
     var blankPos = this.findBlankTile(this.initialState);
 
     List<Node> openList = [
@@ -175,18 +179,19 @@ public class NPuzzle
 
         loop++;
 
-        if (openList[i].heuristic == 0)
-        {
-          Console.WriteLine($"solution found. loop {loop} - unique: {hashKeys.Count}");
-          // this.printSolution(openList[i]);
-          return;
-        }
-
         var _hashKey = openList[i].HashKey();
         if (hashKeys.Contains(_hashKey))
         {
           continue;
         };
+
+        if (openList[i].heuristic == 0)
+        {
+          watcher.Stop();
+          Console.WriteLine($"solution found. loop {loop} - unique: {hashKeys.Count} - time: {watcher.ElapsedMilliseconds}");
+          // this.printSolution(openList[i]);
+          return;
+        }
 
         hashKeys.Add(_hashKey);
 

@@ -1,0 +1,24 @@
+D:\Document\Projects\Work-Projects\n-puzzle\cs-console\Program.cs(47,15): warning CS0219: The variable 'N' is assigned but its value is never used [D:\Document\Projects\Work-Projects\n-puzzle\cs-console\cs-console.csproj]
+Goal:
+ 27	  6	 44	 32	 19	 36	 24	 15
+ 50	 54	  5	 48	 43	 33	 53	 45
+  4	 38	 37	 41	 17	 35	 21	 63
+ 18	 46	 22	  9	 58	 11	 14	 51
+ 31	 52	 55	 12	 61	 62	 20	  8
+ 59	 49	 23	  1	 25	 10	 28	 60
+ 29	 13	 47	  2	 56	 34	  3	  7
+ 42	 16	  0	 26	 30	 57	 40	 39
+Start:
+  9	 10	 24	 45	 42	 48	 13	 59
+ 26	 17	 54	 41	 50	 61	  0	 43
+ 57	 14	  7	 58	 12	  3	 27	 62
+ 18	  2	  8	 20	 31	 19	 30	  4
+ 38	 28	 56	 34	 60	 29	  1	 63
+ 36	 11	 52	 25	 32	 15	 16	 40
+ 23	 51	 55	  5	 22	 53	 47	 21
+ 46	 49	  6	 33	 37	 35	 39	 44
+canSolve: True
+solution found. loop 434598 - unique: 432582 - time: 11346
+
+solution found. loop 434598 - unique: 432582 - time: 11600
+solution found. loop 434598 - unique: 432582 - time: 11821
