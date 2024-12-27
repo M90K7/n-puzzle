@@ -19,7 +19,7 @@
       [31, 32, 33, 34, 35, 0],
     ];
 
-    const int N = 6;
+    const int N = 4;
     const int K = 16;
 
     var puzzleGen = new NPuzzleGenerator(N);
@@ -45,8 +45,8 @@
     NPuzzle puzzle = new(initial, goal, K);
     try
     {
-      // puzzle.kBeamSearch();
-      puzzle.StochasticBeamSearch();
+      puzzle.kBeamSearch();
+      // puzzle.StochasticBeamSearch();
     }
     catch (Exception ex)
     {
