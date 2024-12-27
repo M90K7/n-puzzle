@@ -208,7 +208,7 @@ public class NPuzzle
       openList = nextOpenList.OrderBy(l => l.heuristic).Take(beamWidth).ToList();
       // nextOpenList.Clear();
 
-      if (hashKeys.Count % 1000 == 0)
+      if (loop % 1000 == 0)
       {
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -220,6 +220,9 @@ public class NPuzzle
 
   public void StochasticBeamSearch()
   {
+    Stopwatch watcher = new();
+    watcher.Start();
+
     var blankPos = this.findBlankTile(this.initialState);
 
     List<Node> openList = [new Node(this.initialState, null, this.CalcHeuristic(this.initialState), blankPos)];
@@ -270,6 +273,7 @@ public class NPuzzle
 
       for (int i = 0; i < openList.Count; i++)
       {
+        loop++;
         var currentNode = openList[i];
         var _hashKey = currentNode.HashKey();
 
@@ -280,7 +284,8 @@ public class NPuzzle
 
         if (currentNode.heuristic == 0)
         {
-          Console.WriteLine($"solution found. Tree loop {loop} - unique: {hashKeys.Count}");
+          watcher.Stop();
+          Console.WriteLine($"solution found. loop {loop} - unique: {hashKeys.Count} - time: {watcher.ElapsedMilliseconds}");
           // this.printSolution(currentNode);
           return;
         }
@@ -295,20 +300,20 @@ public class NPuzzle
             nextOpenList.Add(neighbor);
           }
         }
-        loop++;
+
       }
       // Method 1
-      // openList = SelectNextBeam(nextOpenList);
+      openList = SelectNextBeam(nextOpenList);
 
       // Method 2
-      if (nextOpenList.Count > beamWidth)
-      {
-        nextOpenList = nextOpenList.OrderBy(b => b.heuristic).ToList();
-        var _nextOpenList = nextOpenList.Take(beamWidth / 2).ToList();
-        _nextOpenList.AddRange(nextOpenList.TakeLast(beamWidth / 2));
-        nextOpenList = _nextOpenList.ToList();
-      }
-      openList = nextOpenList;
+      // if (nextOpenList.Count > beamWidth)
+      // {
+      //   nextOpenList = nextOpenList.OrderBy(b => b.heuristic).ToList();
+      //   var _nextOpenList = nextOpenList.Take(beamWidth / 2).ToList();
+      //   _nextOpenList.AddRange(nextOpenList.TakeLast(beamWidth / 2));
+      //   nextOpenList = _nextOpenList.ToList();
+      // }
+      // openList = nextOpenList;
 
       if (openList.Count == 0)
         break;

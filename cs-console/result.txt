@@ -18,7 +18,3 @@ Start:
  23	 51	 55	  5	 22	 53	 47	 21
  46	 49	  6	 33	 37	 35	 39	 44
 canSolve: True
-solution found. loop 434598 - unique: 432582 - time: 11346
-
-solution found. loop 434598 - unique: 432582 - time: 11600
-solution found. loop 434598 - unique: 432582 - time: 11821
